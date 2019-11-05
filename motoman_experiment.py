@@ -22,6 +22,7 @@ import IPython
 planningServer = p.connect(p.DIRECT)
 executingServer = p.connect(p.GUI)
 p.setAdditionalSearchPath(pybullet_data.getDataPath())
+print pybullet_data.getDataPath()
 ### set the real-time physics simulation ###
 # p.setGravity(0.0, 0.0, -9.8, executingServer)
 # p.setRealTimeSimulation(1, executingServer)
