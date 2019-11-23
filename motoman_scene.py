@@ -25,6 +25,8 @@ executingServer = p.connect(p.DIRECT)
 p.setAdditionalSearchPath(pybullet_data.getDataPath())
 # print pybullet_data.getDataPath()
 ### set the real-time physics simulation ###
+p.setGravity(0.0, 0.0, -9.8, planningServer)
+p.setRealTimeSimulation(1, planningServer)
 # p.setGravity(0.0, 0.0, -9.8, executingServer)
 # p.setRealTimeSimulation(1, executingServer)
 known_geometries_planning = []
@@ -120,11 +122,55 @@ camera_extrinsic = np.array(
 	 [-0.0218976, -0.6847184, -0.7284787, 1.24119], 
 	 [0.0, 0.0, 0.0, 1.0]])
 
+
+viewMatrix = p.computeViewMatrix(
+	cameraEyePosition=[camera_extrinsic[0][3], camera_extrinsic[1][3], camera_extrinsic[2][3]],
+	cameraTargetPosition=[tablePosition[0]+table_dim[0]/2+0.3, tablePosition[1], tablePosition[2]+table_dim[2]/2],
+	cameraUpVector=[-camera_extrinsic[0][1], -camera_extrinsic[1][1], -camera_extrinsic[2][1]])
+
+print("viewMatrix")
+for i in xrange(4):
+	print( str(viewMatrix[4*i])+ "\t" + str(viewMatrix[4*i+1]) + "\t" + str(viewMatrix[4*i+2]) + "\t" + str(viewMatrix[4*i+3]) )
+
+projectionMatrix = p.computeProjectionMatrixFOV(
+	fov=90.0,
+	aspect=1,
+	nearVal=0.4,
+	farVal=3.47)
+
+
+# _c = p.createCollisionShape(shapeType=p.GEOM_MESH, 
+# 		fileName="mesh/003_cracker_box/google_16k/textured.obj", meshScale=[1,1,1], physicsClientId=planningServer)
+# _v = p.createVisualShape(shapeType=p.GEOM_MESH, 
+# 		fileName="mesh/003_cracker_box/google_16k/textured.obj", meshScale=[1,1,1], 
+# 		rgbaColor=[1.0, 1.0, 1.0, 1.0], physicsClientId=planningServer)
+# _m = p.createMultiBody(baseMass=2.2, baseCollisionShapeIndex=_c, baseVisualShapeIndex=_v,
+# 		basePosition=[tablePosition[0], tablePosition[1], tablePosition[2]+table_dim[2]/2+0.03], 
+# 		baseOrientation=[0, 0, 0, 1], physicsClientId=planningServer)
+# _c = p.createCollisionShape(shapeType=p.GEOM_MESH, 
+# 		fileName="mesh/004_sugar_box/google_16k/textured.obj", meshScale=[1,1,1], physicsClientId=planningServer)
+# _v = p.createVisualShape(shapeType=p.GEOM_MESH, 
+# 		fileName="mesh/004_sugar_box/google_16k/textured.obj", meshScale=[1,1,1], 
+# 		rgbaColor=[1.0, 1.0, 1.0, 1.0], physicsClientId=planningServer)
+# _m = p.createMultiBody(baseMass=2.2, baseCollisionShapeIndex=_c, baseVisualShapeIndex=_v,
+# 		basePosition=[tablePosition[0]+0.11, tablePosition[1]+0.15, tablePosition[2]+table_dim[2]/2+0.02], 
+# 		baseOrientation=[0, 0, 1, 0], physicsClientId=planningServer)
+# _c = p.createCollisionShape(shapeType=p.GEOM_MESH, 
+# 		fileName="mesh/019_pitcher_base/google_16k/textured.obj", meshScale=[1,1,1], physicsClientId=planningServer)
+# _v = p.createVisualShape(shapeType=p.GEOM_MESH, 
+# 		fileName="mesh/019_pitcher_base/google_16k/textured.obj", meshScale=[1,1,1], 
+# 		rgbaColor=[1.0, 1.0, 1.0, 1.0], physicsClientId=planningServer)
+# _m = p.createMultiBody(baseMass=2.2, baseCollisionShapeIndex=_c, baseVisualShapeIndex=_v,
+# 		basePosition=[tablePosition[0]-0.07, tablePosition[1]+0.16, tablePosition[2]+table_dim[2]/2+0.04], 
+# 		baseOrientation=[0, 0, 0, 1], physicsClientId=planningServer)
+
+
+
 img_index = sys.argv[1]
 # nsamples = int(sys.argv[2]) ### choose from (1000-5000)
 
 Objects = OrderedDict() ### key: Object names / value: (1) mesh file (2) existence probability
-prob_stat_file = "../Object_Existence_Network/data/probability_statistics/" + img_index + "_probs.txt"
+prob_stat_file = "../Object_Existence_Network/data/probability_statistics/" + img_index + "_prob.txt"
 f_prob_stat = open(prob_stat_file)
 for line in f_prob_stat:
 	line = line.split()
@@ -135,7 +181,12 @@ hypotheses, mostPromisingHypoIdxes, nObjectInPlanning = \
 	utils_scene.planScene_generation(Objects, img_index, camera_extrinsic, planningServer)
 
 
-
+width, height, rgbImg, depthImg, segImg = p.getCameraImage(
+	width=1280,
+	height=720,
+	viewMatrix=viewMatrix,
+	projectionMatrix=projectionMatrix,
+	physicsClientId=planningServer)
 
 time.sleep(10000)
 
