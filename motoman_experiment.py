@@ -36,11 +36,11 @@ known_geometries_planning.append(motomanID_p)
 known_geometries_executing.append(motomanID_e)
 
 ### preserve the following five lines for test purposes ###
-# print "Motoman Robot: " + str(motomanID_p)
-# num_joints = p.getNumJoints(motomanID_p, planningServer)
-# print "Num of joints: " + str(num_joints)
-# for i in range(num_joints):
-# 	print(p.getJointInfo(motomanID_p, i, planningServer))
+print "Motoman Robot: " + str(motomanID_p)
+num_joints = p.getNumJoints(motomanID_p, planningServer)
+print "Num of joints: " + str(num_joints)
+for i in range(num_joints):
+	print(p.getJointInfo(motomanID_p, i, planningServer))
 
 
 ########## information related to Motoman ###########
