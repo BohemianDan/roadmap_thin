@@ -1,4 +1,4 @@
-from __future__ import division 
+ 
 import pybullet as p
 import numpy as np
 import pybullet_data
@@ -8,7 +8,7 @@ import time
 import random
 
 from scipy import spatial
-import cPickle as pickle
+import pickle as pickle
 
 class Mesh:
 	def __init__(self, m, objName, objIdx, hypoIdx, pos, quat, prob, objRole):
@@ -130,7 +130,7 @@ def createHypoMesh(currentlabelIdx, objIdx, meshFile, objName, objRole, scale, p
 	for hp in hypotheses:
 		temp_probs.append(hp.prob)
 	temp_sum = sum(temp_probs)
-	for i in xrange(0, len(hypotheses)):
+	for i in range(0, len(hypotheses)):
 		hypotheses[i].setProb(round(temp_probs[i]*(1-notInSceneProb)/temp_sum, 3))
 
 	return hypotheses, largest_prob_idx
@@ -138,9 +138,9 @@ def createHypoMesh(currentlabelIdx, objIdx, meshFile, objName, objRole, scale, p
 
 def printPoses(meshes):
 	for mesh in meshes:
-		print "hypo " + str(mesh.hypoIdx) + " " + str(mesh.pos) + " " + str(mesh.quat) + " " + \
-							str(mesh.prob) + "\tfor object " + str(mesh.objIdx) + ": " + mesh.objName
-	print "--------------------------------------\n"
+		print("hypo " + str(mesh.hypoIdx) + " " + str(mesh.pos) + " " + str(mesh.quat) + " " + \
+							str(mesh.prob) + "\tfor object " + str(mesh.objIdx) + ": " + mesh.objName)
+	print("--------------------------------------\n")
 
 def collisionCheck_amongObjects(m, known_geometries, benchmarkType, clientId):
 	isCollision = False
@@ -154,7 +154,7 @@ def collisionCheck_amongObjects(m, known_geometries, benchmarkType, clientId):
 		contacts = p.getClosestPoints(m, g, 0.01, physicsClientId=clientId)
 		if len(contacts) != 0:
 			isCollision = True
-			print "collision between " + m.objName + "and " + "known geometries " + str(g)
+			print("collision between " + m.objName + "and " + "known geometries " + str(g))
 			break
 
 	return isCollision
@@ -201,7 +201,7 @@ def checkEdgeValidity(n1, n2, motomanID, known_geometries, clientId):
 	if nseg == 0:
 		nseg = 1
 	isEdgeValid = True
-	for i in xrange(1, nseg):
+	for i in range(1, nseg):
 		interm_j0 = n1[0] + (n2[0]-n1[0]) / nseg * i
 		interm_j1 = n1[1] + (n2[1]-n1[1]) / nseg * i
 		interm_j2 = n1[2] + (n2[2]-n1[2]) / nseg * i
@@ -233,7 +233,7 @@ def label_the_edge(n1, n2, motomanID, hypotheses, clientId):
 			math.fabs(n1[5]-n2[5]), math.fabs(n1[6]-n2[6]))) / step)
 	if nseg == 0:
 		nseg = 1
-	for i in xrange(0, nseg+1):
+	for i in range(0, nseg+1):
 		interm_j0 = n1[0] + (n2[0]-n1[0]) / nseg * i
 		interm_j1 = n1[1] + (n2[1]-n1[1]) / nseg * i
 		interm_j2 = n1[2] + (n2[2]-n1[2]) / nseg * i
@@ -271,13 +271,13 @@ def collisionCheck_truePoses(motomanID, truePoses, clientId):
 def trueScene_generation(benchmarkType, scene, Objects, clientId):
 	truePoses = []
 	nObjectInExecuting = 0
-	for i in xrange(len(Objects)):
+	for i in range(len(Objects)):
 		if Objects[i][3] != "phantom":
 			truePoses += createTrueMesh(-1, Objects[i][0], Objects[i][1], Objects[i][2], Objects[i][3], 
 												Objects[i][4], Objects[i][5], Objects[i][6], Objects[i][7], clientId)
 			nObjectInExecuting += 1
-	print "Number of Objects in the ground truth (execution): " + str(nObjectInExecuting)
-	print "-------true poses: " + str(benchmarkType) + ", " + str(scene) + "-------"
+	print("Number of Objects in the ground truth (execution): " + str(nObjectInExecuting))
+	print("-------true poses: " + str(benchmarkType) + ", " + str(scene) + "-------")
 	printPoses(truePoses)
 	return truePoses, nObjectInExecuting
 
@@ -286,7 +286,7 @@ def planScene_generation(Objects, benchmarkType, known_geometries, transErrors, 
 	mostPromisingHypoIdxes = []
 	currentlabelIdx = 0
 	nObjectInPlanning = 0
-	for i in xrange(len(Objects)):
+	for i in range(len(Objects)):
 		if Objects[i][3] == "invisible":
 			continue
 		mm, pp = createHypoMesh(currentlabelIdx, Objects[i][0], Objects[i][1], Objects[i][2], Objects[i][3], Objects[i][4], 
@@ -295,15 +295,15 @@ def planScene_generation(Objects, benchmarkType, known_geometries, transErrors, 
 		mostPromisingHypoIdxes.append(pp)
 		nObjectInPlanning += 1
 		currentlabelIdx = len(hypotheses)
-	print "Number of Objects in the planning scene: " + str(nObjectInPlanning)
-	print "-------all hypotheses: " + str(benchmarkType) + "-------"
+	print("Number of Objects in the planning scene: " + str(nObjectInPlanning))
+	print("-------all hypotheses: " + str(benchmarkType) + "-------")
 	if clientId == 0:
 		printPoses(hypotheses)
 	return hypotheses, mostPromisingHypoIdxes, nObjectInPlanning
 
 def calculateEuclidean(previous_state, current_state):
 	tempSquare = 0.0
-	for ii in xrange(len(previous_state)):
+	for ii in range(len(previous_state)):
 		tempSquare += math.pow(previous_state[ii]-current_state[ii] ,2)
 	tempSquare = math.sqrt(tempSquare)
 	return tempSquare
@@ -318,7 +318,7 @@ def local_move(n1, n2, motomanID, truePoses, clientId):
 		math.fabs(n1[5]-n2[5]), math.fabs(n1[6]-n2[6]))) / step)
 	if nseg == 0:
 		nseg = 1
-	for i in xrange(1, nseg):
+	for i in range(1, nseg):
 		interm_j0 = n1[0] + (n2[0]-n1[0]) / nseg * i
 		interm_j1 = n1[1] + (n2[1]-n1[1]) / nseg * i
 		interm_j2 = n1[2] + (n2[2]-n1[2]) / nseg * i
@@ -350,14 +350,14 @@ def executeTrajectory(traj_file, motomanID, truePoses, clientId):
 
 	for line in f:
 		current_state = line.split()
-		current_state = map(float, current_state)
+		current_state = list(map(float, current_state))
 		if (previous_state is not None):
 			trajectoryCost += calculateEuclidean(previous_state, current_state)
 			trajectoryCollision = trajectoryCollision.union(
 											local_move(previous_state, current_state, motomanID, truePoses, clientId))
 			time.sleep(0.04)
 		previous_state = current_state
-	print "collisions: " + str(trajectoryCollision) + ",  total: " + str(len(trajectoryCollision))
+	print("collisions: " + str(trajectoryCollision) + ",  total: " + str(len(trajectoryCollision)))
 
 	### now work on success evaluation
 	if len(trajectoryCollision) != 0:
@@ -370,71 +370,71 @@ def executeAllTraj_example(home_configuration, motomanID, truePoses, path, clien
 	### write in (#obs, success, cost) information for each search method
 	f = open(statistics_file, "w")
 
-	raw_input("Press to put Motoman to home configuration")
+	input("Press to put Motoman to home configuration")
 	### Put the motoman back to its home configuration
 	for j in range(1, 8):
 		result = p.resetJointState(motomanID, j, home_configuration[j-1], physicsClientId=clientId)
 	for j in range(11, 18):
 		result = p.resetJointState(motomanID, j, home_configuration[j-4], physicsClientId=clientId)
-	raw_input("Press to execute A star trajectory")
+	input("Press to execute A star trajectory")
 	astar_traj_file = path + "/Astartraj.txt"
 	temp_ncollision, temp_isSuccess, temp_cost = executeTrajectory(astar_traj_file, motomanID, truePoses, clientId)
 	f.write( str(temp_ncollision) + " " + str(temp_isSuccess) + " " + str(temp_cost) + "\n" )
 
-	raw_input("Press to put Motoman to home configuration")
+	input("Press to put Motoman to home configuration")
 	### Put the motoman back to its home configuration
 	for j in range(1, 8):
 		result = p.resetJointState(motomanID, j, home_configuration[j-1], physicsClientId=clientId)
 	for j in range(11, 18):
 		result = p.resetJointState(motomanID, j, home_configuration[j-4], physicsClientId=clientId)
-	raw_input("Press to execute MCR Greedy trajectory")
+	input("Press to execute MCR Greedy trajectory")
 	mcrg_traj_file = path + "/MCRGtraj.txt"
 	temp_ncollision, temp_isSuccess, temp_cost = executeTrajectory(mcrg_traj_file, motomanID, truePoses, clientId)
 	f.write( str(temp_ncollision) + " " + str(temp_isSuccess) + " " + str(temp_cost) + "\n" )
 
-	raw_input("Press to put Motoman to home configuration")
+	input("Press to put Motoman to home configuration")
 	### Put the motoman back to its home configuration
 	for j in range(1, 8):
 		result = p.resetJointState(motomanID, j, home_configuration[j-1], physicsClientId=clientId)
 	for j in range(11, 18):
 		result = p.resetJointState(motomanID, j, home_configuration[j-4], physicsClientId=clientId)
-	raw_input("Press to execute MCR exact trajectory")
+	input("Press to execute MCR exact trajectory")
 	mcre_traj_file = path + "/MCREtraj.txt"
 	temp_ncollision, temp_isSuccess, temp_cost = executeTrajectory(mcre_traj_file, motomanID, truePoses, clientId)
 	f.write( str(temp_ncollision) + " " + str(temp_isSuccess) + " " + str(temp_cost) + "\n" )
 
-	raw_input("Press to put Motoman to home configuration")
+	input("Press to put Motoman to home configuration")
 	### Put the motoman back to its home configuration
 	for j in range(1, 8):
 		result = p.resetJointState(motomanID, j, home_configuration[j-1], physicsClientId=clientId)
 	for j in range(11, 18):
 		result = p.resetJointState(motomanID, j, home_configuration[j-4], physicsClientId=clientId)
-	raw_input("Press to execute MaxSuccess greedy trajectory")
+	input("Press to execute MaxSuccess greedy trajectory")
 	msg_traj_file = path + "/MSGtraj.txt"
 	temp_ncollision, temp_isSuccess, temp_cost = executeTrajectory(msg_traj_file, motomanID, truePoses, clientId)
 	f.write( str(temp_ncollision) + " " + str(temp_isSuccess) + " " + str(temp_cost) + "\n" )
 
-	raw_input("Press to put Motoman to home configuration")
+	input("Press to put Motoman to home configuration")
 	### Put the motoman back to its home configuration
 	for j in range(1, 8):
 		result = p.resetJointState(motomanID, j, home_configuration[j-1], physicsClientId=clientId)
 	for j in range(11, 18):
 		result = p.resetJointState(motomanID, j, home_configuration[j-4], physicsClientId=clientId)
-	raw_input("Press to execute MaxSuccess exact trajectory")
+	input("Press to execute MaxSuccess exact trajectory")
 	mse_traj_file = path + "/MSEtraj.txt"
 	temp_ncollision, temp_isSuccess, temp_cost = executeTrajectory(mse_traj_file, motomanID, truePoses, clientId)
 	f.write( str(temp_ncollision) + " " + str(temp_isSuccess) + " " + str(temp_cost) + "\n" )	
 
-	raw_input("Press to put Motoman to home configuration")
+	input("Press to put Motoman to home configuration")
 	### Put the motoman back to its home configuration
 	for j in range(1, 8):
 		result = p.resetJointState(motomanID, j, home_configuration[j-1], physicsClientId=clientId)
 	for j in range(11, 18):
 		result = p.resetJointState(motomanID, j, home_configuration[j-4], physicsClientId=clientId)
-	raw_input("Press to execute MCR-MLC trajectory")
+	input("Press to execute MCR-MLC trajectory")
 	mcrmcg_traj_file = path + "/MCRMCGtraj.txt"
 	temp_ncollision, temp_isSuccess, temp_cost = executeTrajectory(mcrmcg_traj_file, motomanID, truePoses, clientId)
 	f.write( str(temp_ncollision) + " " + str(temp_isSuccess) + " " + str(temp_cost) + "\n" )
 
 	f.close()
-	print "trajectories all executed and time record."
+	print("trajectories all executed and time record.")
